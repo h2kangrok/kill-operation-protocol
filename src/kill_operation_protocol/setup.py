@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'draw_box = kill_operation_protocol.draw_box:main',
         ],
     },
 )
