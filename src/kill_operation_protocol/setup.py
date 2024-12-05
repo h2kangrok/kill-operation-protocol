@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'draw_box = kill_operation_protocol.draw_box:main',
+            'pub_cam = kill_operation_protocol.pub_cam:main',
         ],
     },
 )
