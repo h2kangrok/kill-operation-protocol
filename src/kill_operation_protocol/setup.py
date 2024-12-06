@@ -23,6 +23,10 @@ setup(
             'draw_box = kill_operation_protocol.world_view.draw_box:main',
             'pub_cam = kill_operation_protocol.world_view.pub_cam:main',
             'test_sub = kill_operation_protocol.world_view.test_sub:main',
+
+            'web = kill_operation_protocol.flask.web:main',
+            'log_publisher = kill_operation_protocol.flask.log_publisher:main',
+            'dispatch_receiver = kill_operation_protocol.flask.dispatch_receiver:main',
         ],
     },
 )

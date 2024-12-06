@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROS2 Flask Web Interface - SWAT Theme</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #3a74e0;
+            text-shadow: 2px 2px 5px #000000;
+        }
+        h2 {
+            color: #00ff00;
+            text-transform: uppercase;
+        }
+        #container {
+            display: flex;
+            border: 2px solid #ff0000;
+            padding: 20px;
+            margin: 20px;
+            background-color: #333333;
+            height: 90vh;
+        }
+        #webcams {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-right: 20px;
+            border-right: 2px solid #ff0000;
+        }
+        .cam-feed {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #ff0000;
+            background-color: #222222;
+            margin-bottom: 10px;
+        }
+        .cam-feed:last-child {
+            margin-bottom: 0;
+        }
+        img {
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 10px #ff0000;
+            width: 98%;
+            height: 39vh;
+            object-fit: contain;
+            padding-left: 1%;
+        }
+        #log {
+            flex: 1;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        #log-container {
+            background-color: #222222;
+            padding: 10px;
+            border: 2px solid #00ff00;
+            height: calc(100% - 150px);
+            overflow-y: auto;
+        }
+        #start-button {
+            background-color: #3a74e0;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        #start-button:hover {
+            background-color: #2b5ab3;
+        }
+    </style>
+</head>
+<body>
+    <h1>SWAT</h1>
+    <div id="container">
+        <div id="webcams">
+            <div class="cam-feed">
+                <h2>WORLD_VIEW</h2>
+                <img id="world_view" src="/video_feed_1" alt="worldview">
+            </div>
+            <div class="cam-feed">
+                <h2>ROBOT_VIEW</h2>
+                <img id="robot_view" src="/video_feed_2" alt="robotview">
+            </div>
+        </div>
+        <div id="log">
+            <h2>KILL_OPERATION_PROTOCOL</h2>
+            <p>Neutralization of a Terrorist Leader</p>
+            <button id="start-button">AMR 출동</button>
+            <h2>Logs</h2>
+            <div id="log-container">
+                <p>Standby to Logs</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 이전에 처리된 로그를 저장할 배열
+        let processedLogs = [];
+    
+        function updateLogs() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/logs', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const logContainer = document.getElementById('log-container');
+                    logContainer.innerHTML = '';
+    
+                    data.logs.forEach(log => {
+                        // 로그를 DOM에 추가
+                        const p = document.createElement('p');
+    
+                        // "트래킹 종료!"일 경우 블랙색 텍스트로 표시
+                        if (log.includes('트래킹 종료!')) {
+                            p.style.color = 'red'; // 텍스트 색상 변경
+                        }
+    
+                        p.textContent = log;
+                        logContainer.appendChild(p);
+    
+                        // 이전에 처리된 로그인지 확인
+                        if (!processedLogs.includes(log)) {
+                            // "트래킹 시작!"이 포함된 새 로그 처리
+                            if (log.includes('트래킹 시작!')) {
+                                alert('트래킹 시작');
+                            }
+                            // 새 로그를 처리된 로그 목록에 추가
+                            processedLogs.push(log);
+                        }
+                    });
+                }
+            };
+            xhr.send();
+        }
+    
+        setInterval(updateLogs, 2000);
+    
+        document.getElementById('start-button').addEventListener('click', function () {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/dispatch', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log('Dispatched');
+                }
+            };
+            xhr.send();
+        });
+    </script>
+</body>
+</html>
