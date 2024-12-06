@@ -1,0 +1,1 @@
+bool together_status

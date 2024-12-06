@@ -14,7 +14,8 @@ find_package(rosidl_default_generators REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 set(msg_files
-
+  "msg/TargetStatus.msg"
+  "msg/TogetherStatus.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

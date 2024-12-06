@@ -1,0 +1,1 @@
+bool target_status

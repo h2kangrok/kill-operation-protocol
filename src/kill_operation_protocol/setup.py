@@ -20,8 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'draw_box = kill_operation_protocol.draw_box:main',
-            'pub_cam = kill_operation_protocol.pub_cam:main',
+            'draw_box = kill_operation_protocol.world_view.draw_box:main',
+            'pub_cam = kill_operation_protocol.world_view.pub_cam:main',
+            'test_sub = kill_operation_protocol.world_view.test_sub:main',
         ],
     },
 )
