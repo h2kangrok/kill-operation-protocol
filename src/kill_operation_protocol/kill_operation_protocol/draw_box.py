@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage
+from std_msgs.msg import Bool  # 추가: Bool 메시지 타입
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -33,6 +34,7 @@ class ImageSubscriber(Node):
             self.listener_callback,
             10
         )
+        self.publisher = self.create_publisher(Bool, 'world_view/check', 10)  # 퍼블리셔 생성
         self.setup_perspective_transform()  # 초기 투시 변환 설정
 
     def setup_perspective_transform(self):
@@ -92,6 +94,12 @@ class ImageSubscriber(Node):
                 # 변환된 이미지에 사각형 그리기
                 cv2.rectangle(annotated_image, (x1, y1), (x2, y2), color, thickness)
 
+                # 색상이 변경되었으면 퍼블리셔로 메시지 발송
+                if color == target_color:
+                    self.publish_check(True)
+                else:
+                    self.publish_check(False)
+
                 # 변환된 이미지와 함께 결과를 출력
                 cv2.imshow("Warped Feed", annotated_image)
 
@@ -101,6 +109,13 @@ class ImageSubscriber(Node):
 
         except Exception as e:
             self.get_logger().error(f'Error: {e}')
+
+    def publish_check(self, status):
+        # 'world_view/check' 토픽에 True/False 발행
+        msg = Bool()
+        msg.data = status
+        self.publisher.publish(msg)
+        self.get_logger().info(f"Publishing: {status}")
 
 
 def detect_objects(image):
