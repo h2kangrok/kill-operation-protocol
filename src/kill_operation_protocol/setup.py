@@ -30,6 +30,8 @@ setup(
 
             'yolo_tracking = kill_operation_protocol.tracking.yolo_tracking:main',
             'tracking_pub_cam = kill_operation_protocol.tracking.tracking_pub_cam:main',
+
+            'start_swat = kill_operation_protocol.swat_nav2.amr_ctrl:main',
         ],
     },
 )
