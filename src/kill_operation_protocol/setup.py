@@ -27,6 +27,9 @@ setup(
             'web = kill_operation_protocol.flask.web:main',
             'log_publisher = kill_operation_protocol.flask.log_publisher:main',
             'dispatch_receiver = kill_operation_protocol.flask.dispatch_receiver:main',
+
+            'yolo_tracking = kill_operation_protocol.tracking.yolo_tracking:main',
+            'tracking_pub_cam = kill_operation_protocol.tracking.tracking_pub_cam:main',
         ],
     },
 )

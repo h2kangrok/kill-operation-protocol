@@ -1,115 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROS2 Flask Web Interface - SWAT Theme</title>
+    <title>Mission Protocol - Confidential Operations</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: #ffffff;
-            font-family: 'Arial', sans-serif;
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
-        h1 {
+
+        .container {
+            padding: 20px;
             text-align: center;
-            font-size: 3em;
-            color: #3a74e0;
-            text-shadow: 2px 2px 5px #000000;
         }
-        h2 {
-            color: #00ff00;
+
+        header {
+            background: linear-gradient(90deg, #8B0000, #2C2C2C);
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            color: #FF0000;
             text-transform: uppercase;
+            text-shadow: 0 0 20px #FF0000, 0 0 40px #FF4500;
+            margin: 0;
         }
+
+        header p {
+            font-size: 1.2rem;
+            color: #E0E0E0;
+            margin: 10px 0 0;
+        }
+
         #container {
             display: flex;
-            border: 2px solid #ff0000;
+            justify-content: space-between;
+            flex-wrap: wrap;
             padding: 20px;
-            margin: 20px;
-            background-color: #333333;
-            height: 90vh;
         }
+
         #webcams {
             flex: 2;
+            margin-right: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding-right: 20px;
-            border-right: 2px solid #ff0000;
+            gap: 20px;
         }
+
         .cam-feed {
-            flex: 1;
+            background: #1A1A1A;
+            padding: 10px;
+            border: 3px solid #FF0000;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
-            border: 2px solid #ff0000;
-            background-color: #222222;
+            align-items: center;
+            height: 39vh; /* 기본 높이 */
+            min-height: 30vh; /* 최소 높이 */
+            max-height: 50vh; /* 최대 높이 */
+            overflow: hidden; /* 내용이 초과하지 않도록 */
+        }
+
+        .cam-feed h2 {
+            color: #FF4500;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #FF0000;
+            padding-bottom: 5px;
             margin-bottom: 10px;
+            text-align: center;
         }
-        .cam-feed:last-child {
-            margin-bottom: 0;
-        }
-        img {
-            border: 3px solid #00ff00;
-            box-shadow: 0 0 10px #ff0000;
-            width: 98%;
-            height: 39vh;
-            object-fit: contain;
-            padding-left: 1%;
-        }
+
+        .cam-feed img {
+            width: 100%; /* 부모 너비에 맞춤 */
+            height: 100%; /* 부모 높이에 맞춤 */
+            object-fit: contain; /* 비율 유지하며 맞춤 */
+            border-radius: 10px;
+            border: 2px solid #333;        }
+
         #log {
             flex: 1;
-            padding-left: 20px;
-            display: flex;
-            flex-direction: column;
+            background: #1A1A1A;
+            padding: 20px;
+            border: 3px solid #FF0000;
+            border-radius: 10px;
         }
+
+        #log h2 {
+            color: #FF4500;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+        }
+
         #log-container {
-            background-color: #222222;
-            padding: 10px;
-            border: 2px solid #00ff00;
-            height: calc(100% - 150px);
+            height: 300px;
             overflow-y: auto;
+            background: #000000;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #FF0000;
+            font-family: monospace;
+            font-size: 1rem;
+            color: #FFFFFF;
         }
-        #start-button {
-            background-color: #3a74e0;
-            color: #ffffff;
-            padding: 10px 20px;
-            border: none;
+
+        #log-container p {
+            margin: 5px 0;
+        }
+
+        .button {
+            font-size: 1.2rem;
+            padding: 12px 40px;
+            margin: 10px 0;
+            border: 2px solid #FF0000;
+            border-radius: 50px;
+            background: transparent;
+            color: #FF0000;
             cursor: pointer;
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            transition: all 0.3s ease-in-out;
         }
-        #start-button:hover {
-            background-color: #2b5ab3;
+
+        .button:hover {
+            background: #FF0000;
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #FF0000;
+        }
+
+        footer {
+            background: #111;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            border-top: 2px solid #333;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
         }
     </style>
 </head>
+
 <body>
-    <h1>SWAT</h1>
-    <div id="container">
+    <header>
+        <h1>Top Secret Operation</h1>
+        <p>TEAM SWAT</p>
+    </header>
+    <div class="container" id="container">
         <div id="webcams">
             <div class="cam-feed">
-                <h2>WORLD_VIEW</h2>
-                <img id="world_view" src="/video_feed_1" alt="worldview">
+                <h2>World View</h2>
+                <img id="world_view" src="/video_feed_1" alt="World View Camera Feed">
             </div>
             <div class="cam-feed">
-                <h2>ROBOT_VIEW</h2>
-                <img id="robot_view" src="/video_feed_2" alt="robotview">
+                <h2>Robot View</h2>
+                <img id="robot_view" src="/video_feed_2" alt="Robot View Camera Feed">
             </div>
         </div>
         <div id="log">
-            <h2>KILL_OPERATION_PROTOCOL</h2>
-            <p>Neutralization of a Terrorist Leader</p>
-            <button id="start-button">AMR 출동</button>
+            <h2>Mission Control</h2>
+            <button class="button" id="start-button">Deploy Mission</button>
             <h2>Logs</h2>
             <div id="log-container">
-                <p>Standby to Logs</p>
+                <p>Awaiting mission data...</p>
             </div>
         </div>
     </div>
-
+    <footer>
+        <p>&copy; 2024 CovertOps Division</p>
+    </footer>
     <script>
-        // 이전에 처리된 로그를 저장할 배열
         let processedLogs = [];
-    
+
         function updateLogs() {
             const xhr = new XMLHttpRequest();
             xhr.open('GET', '/logs', true);
@@ -118,26 +188,19 @@
                     const data = JSON.parse(xhr.responseText);
                     const logContainer = document.getElementById('log-container');
                     logContainer.innerHTML = '';
-    
+
                     data.logs.forEach(log => {
-                        // 로그를 DOM에 추가
                         const p = document.createElement('p');
-    
-                        // "트래킹 종료!"일 경우 블랙색 텍스트로 표시
                         if (log.includes('트래킹 종료!')) {
-                            p.style.color = 'red'; // 텍스트 색상 변경
+                            p.style.color = 'red';
                         }
-    
                         p.textContent = log;
                         logContainer.appendChild(p);
-    
-                        // 이전에 처리된 로그인지 확인
+
                         if (!processedLogs.includes(log)) {
-                            // "트래킹 시작!"이 포함된 새 로그 처리
                             if (log.includes('트래킹 시작!')) {
-                                alert('트래킹 시작');
+                                    alert('트래킹 시작');
                             }
-                            // 새 로그를 처리된 로그 목록에 추가
                             processedLogs.push(log);
                         }
                     });
@@ -145,9 +208,9 @@
             };
             xhr.send();
         }
-    
+
         setInterval(updateLogs, 2000);
-    
+
         document.getElementById('start-button').addEventListener('click', function () {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/dispatch', true);
@@ -160,7 +223,5 @@
         });
     </script>
 </body>
+
 </html>
-
-
-  
