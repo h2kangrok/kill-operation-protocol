@@ -37,6 +37,7 @@ class ImageSubscriber(Node):
         )
         self.target_publisher = self.create_publisher(TargetStatus, 'world_view/target_status', 10)
         self.together_publisher = self.create_publisher(TogetherStatus, 'world_view/together_status', 10)
+        self.annotated_publisher = self.create_publisher(CompressedImage, 'world_view/annotated', 10)
         self.setup_perspective_transform()
 
     def setup_perspective_transform(self):
@@ -101,6 +102,8 @@ class ImageSubscriber(Node):
                 # 이미지 출력
                 cv2.imshow("Warped Feed", annotated_image)
 
+                self.publish_annotated_image(annotated_image)
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 rclpy.shutdown()
 
@@ -118,6 +121,16 @@ class ImageSubscriber(Node):
         msg.together_status = status
         self.together_publisher.publish(msg)
         self.get_logger().info(f"TogetherStatus Published: {status}")
+
+    def publish_annotated_image(self, annotated_image):
+        msg = CompressedImage()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.format = 'jpeg'
+        _, encoded_image = cv2.imencode('.jpg', annotated_image)
+        msg.data = encoded_image.tobytes()
+        self.annotated_publisher.publish(msg)
+        self.get_logger().info("Annotated image published.")
+
 
 
 def detect_objects(image):

@@ -11,7 +11,7 @@ import os
 import sqlite3
 import hashlib
 # Flask 선언
-app = Flask(__name__, template_folder='/home/yoonkangrok/kill_operation_ws/src/kill_operation_protocol/kill_operation_protocol/flask/templates')
+app = Flask(__name__, template_folder='/home/rokey/kill-operation-protocol/src/kill_operation_protocol/kill_operation_protocol/flask/templates')
 app.secret_key = '2131ds12'  # 세션을 위한 비밀 키 설정
 
 # SWATLogger 클래스
@@ -84,7 +84,7 @@ class SimpleRosNode(Node):
         self.dispatch_publisher = self.create_publisher(String, 'dispatch', qos_profile)
         self.subscription_worldview = self.create_subscription(
             CompressedImage,  # 메시지 유형 변경
-            'worldview_camera/image/compressed',  # 주제 이름 변경
+            'world_view/annotated',  # 주제 이름 변경
             self.worldview_compressed_callback,  # 콜백 함수
             qos_profile
         )    
@@ -110,8 +110,6 @@ class SimpleRosNode(Node):
             frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  # 압축 해제
             if frame is not None:
                 self.worldview_frame = frame  # 그대로 프레임 저장
-                cv2.imshow("WorldView", self.worldview_frame)  # 바로 화면에 표시
-                cv2.waitKey(1)  # 화면을 갱신
         except Exception as e:
             self.get_logger().error(f"Failed to convert compressed WorldView frame: {e}")
 
@@ -122,19 +120,9 @@ class SimpleRosNode(Node):
             frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  # 압축 해제
             if frame is not None:
                 self.robotview_frame = frame  # 그대로 프레임 저장
-                cv2.imshow("RobotView", self.robotview_frame)  # 바로 화면에 표시
-                cv2.waitKey(1)  # 화면을 갱신
         except Exception as e:
             self.get_logger().error(f"Failed to convert compressed RobotView frame: {e}")
 
-
-    # def robotview_callback(self, msg):
-    #     try:
-    #         frame = self.convert_imgmsg_to_np_array(msg)
-    #         if frame is not None:
-    #             self.robotview_frame = cv2.resize(frame, (640, 480))
-    #     except Exception as e:
-    #             self.get_logger().error(f"Failed to convert RobotView frame: {e}")
                 
     def log_callback(self, msg):
         self.get_logger().info(f"Received log: {msg.data}") 
@@ -148,20 +136,6 @@ class SimpleRosNode(Node):
         msg.data = '1'
         self.dispatch_publisher.publish(msg)
         self.get_logger().info("Dispatch message published: 1")
-
-    # def convert_imgmsg_to_np_array(self, img_msg):
-    #     # 이미지 메시지를 NumPy 배열로 변환
-    #     try:
-    #         height = img_msg.height
-    #         width = img_msg.width
-    #         channels = 3  # 'bgr8' has 3 channal
-            
-    #         # raw data로부터 NumPy 배열 생성
-    #         np_arr = np.frombuffer(img_msg.data, dtype=np.uint8).reshape((height, width, channels))
-    #         return np_arr
-    #     except Exception as e:
-    #         self.get_logger().error(f"Error converting ROS Image message to numpy array: {e}")
-    #         return None
 
 # Flask route
 @app.route('/')
