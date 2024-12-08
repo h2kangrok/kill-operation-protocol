@@ -8,7 +8,7 @@ import sys
 import math
 
 
-from swat_interface.msg import TargetStatus, TogetherStatus  # Import custom message types
+from swat_interface.msg import TargetStatus, TogetherStatus, RobotStatus  # Import custom message types
 
 class AMRCtrl(Node):
     def __init__(self):
@@ -22,10 +22,10 @@ class AMRCtrl(Node):
 
         # 타켓을 놓쳤을 때
         self.find_goal_list = [
-            {'x': -0.9, 'y': 0.1, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.9, 'w': 0.1}},
-            {'x': -1.0, 'y': -0.4, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.9, 'w': 0.4}},
-            {'x': -0.4, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.8, 'w': 0.4}},
-            {'x': -0.4, 'y': -0.2, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.1, 'w': 0.9}},
+            {'x': -1.2, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.9, 'w': 0.1}},
+            {'x': -0.5, 'y': -0.5, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.1, 'w': 0.9}},
+            {'x': -1.0, 'y': -0.4, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.9, 'w': 0.3}},
+            {'x': -0.4, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.4, 'w': 0.8}},
             {'x': 0.1, 'y': -0.5, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.5, 'w': 0.8}},
             {'x': 0.0, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.0, 'w': 0.9}}
         ]
@@ -38,6 +38,8 @@ class AMRCtrl(Node):
         #     {'x': 0.0, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.0, 'w': 0.9}}
         # ]
         
+
+        self.move_status_pub = self.create_publisher(RobotStatus, 'robot_status', 10)
         self.init_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
         self.action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
 
@@ -70,6 +72,10 @@ class AMRCtrl(Node):
 
         self.timer = self.create_timer(1.0, self.check_sub_and_server) # 1초마다 상태를 체크하기 위한 타이머 생성
         
+        self.move_msg = RobotStatus()
+        self.move_msg.move_status = self.is_moving
+        self.move_status_pub.publish(self.move_msg)
+
     # bringup이랑 nav2연결 확인 부분
     def check_sub_and_server(self):
         """
@@ -133,7 +139,10 @@ class AMRCtrl(Node):
         if self.goal_index >= len(self.goal_list):
             self.get_logger().info('모든 목표 지점에 도달했습니다.')
             self.is_moving = False # 목적지에 도착해서 안움직임
+            self.move_msg.move_status = self.is_moving
+            self.move_status_pub.publish(self.move_msg)
             self.is_goal_status = False
+            # self.goal_index = 0
             return
 
         goal_msg = NavigateToPose.Goal()
@@ -226,6 +235,7 @@ class AMRCtrl(Node):
     def send_find_target_car_goal(self):
         if self.find_goal_index >= len(self.find_goal_list):
             self.get_logger().info('모든 목표 지점에 도달했습니다.')
+            # self.find_goal_index = 0
             return
 
         goal_msg = NavigateToPose.Goal()
@@ -269,7 +279,7 @@ class AMRCtrl(Node):
             if result.status == 4:
                 self.get_logger().info(f'{self.find_goal_index + 1}번째 목표에 성공적으로 도달했습니다.')
                 self.find_goal_index += 1
-                self.send_goal()
+                self.send_find_target_car_goal()
             else:
                 self.get_logger().info(f'{self.find_goal_index + 1}번째 목표에 실패했습니다. 상태 코드: {result.status}')
         except Exception as e:
@@ -285,6 +295,8 @@ class AMRCtrl(Node):
                 self.get_logger().info('타겟 차량 발견! 출동 시작.')
                 self.is_target_active = True
                 self.is_moving = True
+                self.move_msg.move_status = self.is_moving
+                self.move_status_pub.publish(self.move_msg)
                 self.is_goal_status = True
                 self.start_with_delay()
             else:
@@ -300,6 +312,8 @@ class AMRCtrl(Node):
                 self.get_logger().info('이동 중 타겟 차량이 사라짐. 복귀 모드 전환.')
                 self.is_target_active = False
                 self.is_moving = False
+                self.move_msg.move_status = self.is_moving
+                self.move_status_pub.publish(self.move_msg)
                 self.cancel_goal() # 이 부분을 복귀모드로 변경 
             elif not self.is_moving and self.is_target_active: # 목표지점으로 이동 완료하였는데 타겟이 작전지역에서 벗어남
                 self.get_logger().info('타겟 차량이 사라짐. 탐색 모드로 전환.')
