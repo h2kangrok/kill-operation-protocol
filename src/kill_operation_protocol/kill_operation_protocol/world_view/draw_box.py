@@ -108,13 +108,15 @@ class ImageSubscriber(Node):
                 # 이미지 출력
                 cv2.imshow("Warped Feed", annotated_image)
 
-                self.publish_annotated_image(annotated_image)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 rclpy.shutdown()
 
         except Exception as e:
             self.get_logger().error(f'Error: {e}')
+
+        self.publish_annotated_image(annotated_image)
+
             
     def update_target_status(self, status):
         if self.prev_target_status != status:  # 상태가 변경된 경우에만 publish

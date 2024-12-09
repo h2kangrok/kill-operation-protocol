@@ -62,7 +62,7 @@ class AMRCtrl(Node):
         self.together_subscription = self.create_subscription(
             TogetherStatus,
             '/world_view/together_status',  # Topic to subscribe to
-            self.together_listener_callback,
+            self.target_listener_callback,
             10  # Queue size
         )
 
