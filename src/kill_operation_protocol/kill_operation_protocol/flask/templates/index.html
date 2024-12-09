@@ -13,77 +13,160 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
 
         .container {
+            flex: 1;
             padding: 20px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
             background: linear-gradient(90deg, #8B0000, #2C2C2C);
-            padding: 20px 0;
+            padding: 20px 2vw;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        header h1 {
-            font-size: 3.5rem;
+        .header-left h1 {
+            font-size: 2.5rem;
             color: #FF0000;
             text-transform: uppercase;
             text-shadow: 0 0 20px #FF0000, 0 0 40px #FF4500;
             margin: 0;
         }
 
-        header p {
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-right p {
             font-size: 1.2rem;
             color: #E0E0E0;
-            margin: 10px 0 0;
+            margin: 0;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-button {
+            background-color: transparent;
+            color: #FF0000;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .dropdown-button:hover {
+            color: #FF4500;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #1A1A1A;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #FF4500;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        #running-box {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #000000; /* 초기 배경색 */
+            color: transparent; /* 텍스트 숨김 */
+            border-radius: 10px;
+            animation: none;
+        }
+
+        @keyframes blink {
+            50% {
+                background-color: #000000; /* 깜빡일 때 본문 배경색으로 돌아감 */
+                color: transparent; /* 텍스트 숨김 */
+            }
         }
 
         #container {
             display: flex;
             justify-content: space-between;
+            align-items: stretch; /* 요소의 높이를 동일하게 맞춤 */
             flex-wrap: wrap;
             padding: 20px;
+            overflow-y: auto;
         }
 
         #webcams {
-            flex: 2;
             margin-right: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            width: 34vw;
         }
 
         .cam-feed {
+            position: relative;
             background: #1A1A1A;
-            padding: 10px;
             border: 3px solid #FF0000;
             border-radius: 10px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            height: 39vh; /* 기본 높이 */
-            min-height: 30vh; /* 최소 높이 */
-            max-height: 50vh; /* 최대 높이 */
-            overflow: hidden; /* 내용이 초과하지 않도록 */
+            height: 42.8vh;
+            width: 100%;
+            overflow:hidden;
         }
 
         .cam-feed h2 {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            margin: 0;
             color: #FF4500;
-            font-size: 1.5rem;
-            border-bottom: 2px solid #FF0000;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-            text-align: center;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
 
         .cam-feed img {
-            width: 100%; /* 부모 너비에 맞춤 */
-            height: 100%; /* 부모 높이에 맞춤 */
-            object-fit: contain; /* 비율 유지하며 맞춤 */
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
             border-radius: 10px;
-            border: 2px solid #333;        }
+            background-color: #000;
+        }
 
         #log {
             flex: 1;
@@ -91,16 +174,32 @@
             padding: 20px;
             border: 3px solid #FF0000;
             border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            width: 60vw;
         }
 
         #log h2 {
             color: #FF4500;
             font-size: 1.8rem;
             text-transform: uppercase;
+            text-align: left;
+            margin-bottom: 10px;
         }
 
-        #log-container {
-            height: 300px;
+        #log h3 {
+            color: #FF4500;
+            font-size: 2rem;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #log-container,
+        #secondary-log-container {
+            flex: 1;
             overflow-y: auto;
             background: #000000;
             padding: 15px;
@@ -109,29 +208,25 @@
             font-family: monospace;
             font-size: 1rem;
             color: #FFFFFF;
+            margin-bottom: 10px;
         }
 
-        #log-container p {
-            margin: 5px 0;
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #444;
         }
 
-        .button {
-            font-size: 1.2rem;
-            padding: 12px 40px;
-            margin: 10px 0;
-            border: 2px solid #FF0000;
-            border-radius: 50px;
-            background: transparent;
-            color: #FF0000;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
+        .log-entry .timestamp {
+            color: #AAA;
+            font-size: 0.9rem;
         }
 
-        .button:hover {
-            background: #FF0000;
-            color: #fff;
-            transform: scale(1.1);
-            box-shadow: 0 0 15px #FF0000;
+        .log-entry .log-message {
+            flex: 1;
+            padding-left: 10px;
         }
 
         footer {
@@ -146,14 +241,72 @@
             margin: 0;
             font-size: 0.9rem;
         }
+        #mission-complete-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 1s;
+        }
+        .alert-content h1 {
+            color: #00FF00;
+            font-size: 5rem;
+            text-shadow: 0 0 20px #00FF00, 0 0 40px #00FF7F;
+            animation: glow 2s infinite;
+        }
+
+        #login-history-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            background-color: #1A1A1A;
+            color: white;
+            border: 3px solid #FF0000;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        #popup-bg {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+        }
     </style>
 </head>
 
 <body>
     <header>
-        <h1>Top Secret Operation</h1>
-        <p>TEAM SWAT</p>
+        <div class="header-left">
+            <h1>Top Secret Operation</h1>
+        </div>
+        <div class="header-right">
+            <p>TEAM SWAT</p>
+            <div class="dropdown">
+                <button class="dropdown-button">▼</button>
+                <div class="dropdown-content">
+                    <a href="#" onclick="openLoginHistory()">View Login History</a>
+                    <a href="/logout">Logout</a>
+                </div>
+            </div>
+        </div>
     </header>
+
     <div class="container" id="container">
         <div id="webcams">
             <div class="cam-feed">
@@ -166,20 +319,48 @@
             </div>
         </div>
         <div id="log">
-            <h2>Mission Control</h2>
-            <button class="button" id="start-button">Deploy Mission</button>
+            <h3>Mission Control</h3>
             <h2>Logs</h2>
             <div id="log-container">
                 <p>Awaiting mission data...</p>
             </div>
+            <h2>Secondary Logs</h2>
+            <div id="secondary-log-container">
+                <p>No secondary data available...</p>
+            </div>
+            <div id="running-box">
+                Running
+            </div>
+            <div id="mission-complete-alert">
+                <div class="alert-content">
+                    <h1>MISSION COMPLETE</h1>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- 팝업 -->
+    <div id="login-history-popup">
+        <h2 style="text-align: center; color: #FF4500;">Login History</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: white;">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Login Time</th>
+                </tr>
+            </thead>
+            <tbody id="login-history-table">
+                <!-- 로그인 데이터가 추가될 공간 -->
+            </tbody>
+        </table>
+        <button onclick="closePopup()" style="margin-top: 20px; background-color: #FF4500; border: none; padding: 10px 20px; color: white; border-radius: 5px; cursor: pointer;">Close</button>
+    </div>
+    <div id="popup-bg"></div>
+
     <footer>
-        <p>&copy; 2024 CovertOps Division</p>
+        <p>&copy; E-5</p>
     </footer>
     <script>
-        let processedLogs = [];
-
         function updateLogs() {
             const xhr = new XMLHttpRequest();
             xhr.open('GET', '/logs', true);
@@ -190,37 +371,130 @@
                     logContainer.innerHTML = '';
 
                     data.logs.forEach(log => {
-                        const p = document.createElement('p');
-                        if (log.includes('트래킹 종료!')) {
-                            p.style.color = 'red';
-                        }
-                        p.textContent = log;
-                        logContainer.appendChild(p);
+                        const logEntry = document.createElement('div');
+                        logEntry.classList.add('log-entry');
 
-                        if (!processedLogs.includes(log)) {
-                            if (log.includes('트래킹 시작!')) {
-                                    alert('트래킹 시작');
-                            }
-                            processedLogs.push(log);
-                        }
+                        const timestamp = document.createElement('span');
+                        timestamp.classList.add('timestamp');
+                        timestamp.textContent = log.timestamp;
+
+                        const logMessage = document.createElement('span');
+                        logMessage.classList.add('log-message');
+                        logMessage.textContent = log.log_message;
+
+                        logEntry.appendChild(timestamp);
+                        logEntry.appendChild(logMessage);
+                        logContainer.appendChild(logEntry);
                     });
                 }
             };
             xhr.send();
         }
 
-        setInterval(updateLogs, 2000);
-
-        document.getElementById('start-button').addEventListener('click', function () {
+        function updateSecondaryLogs() {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/dispatch', true);
+            xhr.open('GET', '/secondary_logs', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    console.log('Dispatched');
+                    const data = JSON.parse(xhr.responseText);
+                    const secondaryLogContainer = document.getElementById('secondary-log-container');
+                    secondaryLogContainer.innerHTML = '';
+
+                    data.logs.forEach(log => {
+                        const logEntry = document.createElement('div');
+                        logEntry.classList.add('log-entry');
+
+                        const timestamp = document.createElement('span');
+                        timestamp.classList.add('timestamp');
+                        timestamp.textContent = log.timestamp;
+
+                        const logMessage = document.createElement('span');
+                        logMessage.classList.add('log-message');
+                        logMessage.textContent = log.operation_message;
+
+                        logEntry.appendChild(timestamp);
+                        logEntry.appendChild(logMessage);
+                        secondaryLogContainer.appendChild(logEntry);
+                    });
                 }
             };
             xhr.send();
-        });
+        }
+
+        function updateStartStatus() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/start_status', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const runningBox = document.getElementById('running-box');
+
+                    if (data.start) {
+                        runningBox.style.backgroundColor = '#FF4500';
+                        runningBox.style.color = 'white';
+                        runningBox.style.animation = 'blink 1s infinite';
+                    } else {
+                        runningBox.style.backgroundColor = '#000000';
+                        runningBox.style.color = 'transparent';
+                        runningBox.style.animation = 'none';
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function checkMissionComplete() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/mission_status', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    if (data.complete) {
+                        const alertBox = document.getElementById('mission-complete-alert');
+                        alertBox.style.display = 'flex';
+                        setTimeout(() => {
+                            alertBox.style.display = 'none';
+                        }, 5000); // 5초 후 알림창 숨기기
+                    }
+                }
+            };
+            xhr.send();
+        }
+         
+        function openLoginHistory() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/Database', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const tableBody = document.getElementById('login-history-table');
+                    tableBody.innerHTML = '';
+
+                    data.forEach(record => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${record.username}</td>
+                            <td>${record.login_time}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+
+                    document.getElementById('login-history-popup').style.display = 'block';
+                    document.getElementById('popup-bg').style.display = 'block';
+                }
+            };
+            xhr.send();
+        }
+
+        function closePopup() {
+            document.getElementById('login-history-popup').style.display = 'none';
+            document.getElementById('popup-bg').style.display = 'none';
+        }
+
+        setInterval(updateLogs, 2000);
+        setInterval(updateSecondaryLogs, 2000);
+        setInterval(updateStartStatus, 1000);
+        setInterval(checkMissionComplete, 1000); // Mission Complete 상태 확인
     </script>
 </body>
 

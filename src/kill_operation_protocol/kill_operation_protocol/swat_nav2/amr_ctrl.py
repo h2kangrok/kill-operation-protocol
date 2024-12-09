@@ -49,7 +49,7 @@ class AMRCtrl(Node):
         self.target_subscription = self.create_subscription(
             TargetStatus,
             '/world_view/target_status',  # Topic to subscribe to
-            self.target_listener_callback,
+            self.target_status_callback,
             10  # Queue size
         )
 
@@ -62,7 +62,7 @@ class AMRCtrl(Node):
         self.together_subscription = self.create_subscription(
             TogetherStatus,
             '/world_view/together_status',  # Topic to subscribe to
-            self.target_listener_callback,
+            self.together_status_callback,
             10  # Queue size
         )
 
@@ -292,46 +292,42 @@ class AMRCtrl(Node):
         except Exception as e:
             self.get_logger().error(f'목표 결과 처리 중 오류 발생: {e}')
 
- # ======================================================================   
+# ======================================================================   
 
 
     # 적이 작전 지역으로 들어올 경우
-    def target_listener_callback(self, msg):
-        if msg.target_status:  # 타겟이 감지된 경우
-            if not self.is_target_active:  # 새로운 타겟 감지 시에만 처리
-                self.get_logger().info('타겟 차량 발견! 출동 시작.')
-                self.is_target_active = True
-                self.is_moving = True
-                self.move_msg.move_status = self.is_moving
-                self.move_status_pub.publish(self.move_msg)
-                self.is_goal_status = True
-                self.start_with_delay()
-            else:
-                self.get_logger().info('타겟 차량을 계속 추적 중...')
-        
-        elif msg.target_status is None:
-            self.get_logger().error('타겟 상태 확인 불가! 시스템 점검 필요.')
-            self.cancel_goal()
-            return
+    def target_status_callback(self, msg: TargetStatus):
+        if msg.target_status:
+            self.get_logger().info('타겟 차량 발견! 출동 시작.')
+            self.is_target_active = True
+            self.is_moving = True
+            self.move_msg.move_status = self.is_moving
+            self.move_status_pub.publish(self.move_msg)
+            self.is_goal_status = True
+            self.start_with_delay()
+        else:
+            self.get_logger().info('타겟 미발견 상태 유지 중...') 
 
-        elif not msg.together_status:  # 타겟이 감지되지 않은 경우
-            if self.is_moving and self.is_target_active and self.is_goal_status: # 목표지점으로 이동하다 타겟이 사라짐
+    def together_status_callback(self, msg: TogetherStatus):
+        if msg.together_status:
+            self.get_logger().info('타겟과 상호 작용 상태 지속')
+            # 예: 타겟 추적 강화 로직 등
+        else:
+            # 타겟 상호 작용 끊김 -> 복귀 또는 탐색 로직 수행
+            if self.is_moving and self.is_target_active and self.is_goal_status:
                 self.get_logger().info('이동 중 타겟 차량이 사라짐. 복귀 모드 전환.')
                 self.is_target_active = False
                 self.is_moving = False
                 self.move_msg.move_status = self.is_moving
                 self.move_status_pub.publish(self.move_msg)
-                # self.cancel_goal() # 이 부분을 복귀모드로 변경
-            elif not self.is_moving and self.is_target_active: # 목표지점으로 이동 완료하였는데 타겟이 작전지역에서 벗어남
-                self.get_logger().info('타겟 차량이 사라짐. 탐색 모드로 전환.')
-                # 이 부분에서 찾는 알고리즘 작성
-
-                track_msg = TrackingMsg() #트래킹 전송
+                # 복귀 동작 수행
+            elif not self.is_moving and self.is_target_active:
+                self.get_logger().info('타겟 차량 사라짐. 탐색 모드로 전환.')
+                track_msg = TrackingMsg()
                 track_msg.tracking_msg = "stop"
                 self.tracking_msg_pub.publish(track_msg)
-                
                 self.create_timer(5.0, self.send_find_target_car_goal) 
-
+                
 def main(args=None):
     rclpy.init(args=args)
     

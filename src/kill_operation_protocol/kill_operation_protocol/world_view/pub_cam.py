@@ -9,7 +9,7 @@ class CameraPublisher(Node):
         super().__init__('camera_publisher')
         self.publisher_ = self.create_publisher(CompressedImage, 'worldview_camera/image/compressed', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)  # 10Hz
-        self.cap = cv2.VideoCapture(2)  # 웹캠 연결
+        self.cap = cv2.VideoCapture(5)  # 웹캠 연결
         # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
