@@ -40,6 +40,10 @@ class ImageSubscriber(Node):
         self.annotated_publisher = self.create_publisher(CompressedImage, 'world_view/annotated', 10)
         self.setup_perspective_transform()
 
+          # 이전 상태를 저장하기 위한 변수
+        self.prev_target_status = None
+        self.prev_together_status = None
+
     def setup_perspective_transform(self):
         global matrix
         if matrix is None:
@@ -87,14 +91,16 @@ class ImageSubscriber(Node):
                 # 색상 및 상태 확인
                 if is_target_inside_1 and is_target_inside_2:
                     color = target_color
-                    self.publish_together_status(True)
+                    self.update_together_status(True)
+                    self.update_target_status(False)  # 둘 다 안에 있으면 개별 상태는 False로 설정
                 elif is_target_inside_1:
                     color = alert_color
-                    self.publish_target_status(True)
+                    self.update_target_status(True)
+                    self.update_together_status(False)
                 else:
                     color = default_color
-                    self.publish_together_status(False)
-                    self.publish_target_status(False)
+                    self.update_together_status(False)
+                    self.update_target_status(False)
 
                 # 사각형 그리기
                 cv2.rectangle(annotated_image, (x1, y1), (x2, y2), color, thickness)
@@ -109,6 +115,16 @@ class ImageSubscriber(Node):
 
         except Exception as e:
             self.get_logger().error(f'Error: {e}')
+            
+    def update_target_status(self, status):
+        if self.prev_target_status != status:  # 상태가 변경된 경우에만 publish
+            self.prev_target_status = status
+            self.publish_target_status(status)
+
+    def update_together_status(self, status):
+        if self.prev_together_status != status:  # 상태가 변경된 경우에만 publish
+            self.prev_together_status = status
+            self.publish_together_status(status)
 
     def publish_target_status(self, status):
         msg = TargetStatus()

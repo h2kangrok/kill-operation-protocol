@@ -17,6 +17,7 @@ set(msg_files
   "msg/TargetStatus.msg"
   "msg/TogetherStatus.msg"
   "msg/RobotStatus.msg"
+  "msg/TrackingMsg.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

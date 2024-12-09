@@ -9,7 +9,7 @@ class SimpleSubscriber(Node):
         # Subscription to TargetStatus
         self.target_subscription = self.create_subscription(
             TargetStatus,
-            '/world_view/target_status',  # Topic to subscribe to
+            'world_view/target_status',  # Topic to subscribe to
             self.target_listener_callback,
             10  # Queue size
         )
@@ -17,7 +17,7 @@ class SimpleSubscriber(Node):
         # Subscription to TogetherStatus
         self.together_subscription = self.create_subscription(
             TogetherStatus,
-            '/world_view/together_status',  # Topic to subscribe to
+            'world_view/together_status',  # Topic to subscribe to
             self.together_listener_callback,
             10  # Queue size
         )
