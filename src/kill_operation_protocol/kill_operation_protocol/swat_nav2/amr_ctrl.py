@@ -8,7 +8,7 @@ import sys
 import math
 
 
-from swat_interface.msg import TargetStatus, TogetherStatus, RobotStatus  # Import custom message types
+from swat_interface.msg import TargetStatus, TogetherStatus, RobotStatus, TrackingMsg  # Import custom message types
 
 class AMRCtrl(Node):
     def __init__(self):
@@ -22,10 +22,9 @@ class AMRCtrl(Node):
 
         # 타켓을 놓쳤을 때
         self.find_goal_list = [
-            {'x': -1.2, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.9, 'w': 0.1}},
-            {'x': -0.5, 'y': -0.5, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.1, 'w': 0.9}},
-            {'x': -1.0, 'y': -0.4, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.9, 'w': 0.3}},
-            {'x': -0.4, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.4, 'w': 0.8}},
+            {'x': -0.9, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.9, 'w': 0.1}},
+            {'x': -0.5, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.9, 'w': 0.3}},
+            {'x': -0.5, 'y': -0.5, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.9, 'w': 0.3}},
             {'x': 0.1, 'y': -0.5, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': 0.5, 'w': 0.8}},
             {'x': 0.0, 'y': 0.0, 'z': 0.0, 'orientation': {'x': 0.0, 'y': 0.0, 'z': -0.0, 'w': 0.9}}
         ]
@@ -39,7 +38,8 @@ class AMRCtrl(Node):
         # ]
         
 
-        self.move_status_pub = self.create_publisher(RobotStatus, 'robot_status', 10)
+        self.move_status_pub = self.create_publisher(RobotStatus, 'robot_status', 10) # 웹페이지로 동작 전송
+        self.tracking_msg_pub = self.create_publisher(TrackingMsg, 'tracking_msg_pub', 10)
         self.init_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
         self.action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
 
@@ -59,12 +59,12 @@ class AMRCtrl(Node):
         self.is_goal_status = False # 목표 지점 이동 여부
 
         # Subscription to TogetherStatus
-        # self.together_subscription = self.create_subscription(
-        #     TogetherStatus,
-        #     '/world_view/together_status',  # Topic to subscribe to
-        #     self.together_listener_callback,
-        #     10  # Queue size
-        # )
+        self.together_subscription = self.create_subscription(
+            TogetherStatus,
+            '/world_view/together_status',  # Topic to subscribe to
+            self.together_listener_callback,
+            10  # Queue size
+        )
 
         self._goal_handle = None
         self.goal_index = 0
@@ -73,8 +73,6 @@ class AMRCtrl(Node):
         self.timer = self.create_timer(1.0, self.check_sub_and_server) # 1초마다 상태를 체크하기 위한 타이머 생성
         
         self.move_msg = RobotStatus()
-        self.move_msg.move_status = self.is_moving
-        self.move_status_pub.publish(self.move_msg)
 
     # bringup이랑 nav2연결 확인 부분
     def check_sub_and_server(self):
@@ -141,7 +139,13 @@ class AMRCtrl(Node):
             self.is_moving = False # 목적지에 도착해서 안움직임
             self.move_msg.move_status = self.is_moving
             self.move_status_pub.publish(self.move_msg)
+
             self.is_goal_status = False
+            
+            track_msg = TrackingMsg() #트래킹 전송
+            track_msg.tracking_msg = "start"
+            self.tracking_msg_pub.publish(track_msg)
+
             # self.goal_index = 0
             return
 
@@ -234,8 +238,11 @@ class AMRCtrl(Node):
     
     def send_find_target_car_goal(self):
         if self.find_goal_index >= len(self.find_goal_list):
-            self.get_logger().info('모든 목표 지점에 도달했습니다.')
+            self.get_logger().info('기지에 복귀 완료')
             # self.find_goal_index = 0
+            self.destroy_node()
+            rclpy.shutdown()
+            sys.exit(0)
             return
 
         goal_msg = NavigateToPose.Goal()
@@ -307,28 +314,35 @@ class AMRCtrl(Node):
             self.cancel_goal()
             return
 
-        else:  # 타겟이 감지되지 않은 경우
+        elif not msg.together_status:  # 타겟이 감지되지 않은 경우
             if self.is_moving and self.is_target_active and self.is_goal_status: # 목표지점으로 이동하다 타겟이 사라짐
                 self.get_logger().info('이동 중 타겟 차량이 사라짐. 복귀 모드 전환.')
                 self.is_target_active = False
                 self.is_moving = False
                 self.move_msg.move_status = self.is_moving
                 self.move_status_pub.publish(self.move_msg)
-                self.cancel_goal() # 이 부분을 복귀모드로 변경 
+                # self.cancel_goal() # 이 부분을 복귀모드로 변경
             elif not self.is_moving and self.is_target_active: # 목표지점으로 이동 완료하였는데 타겟이 작전지역에서 벗어남
                 self.get_logger().info('타겟 차량이 사라짐. 탐색 모드로 전환.')
                 # 이 부분에서 찾는 알고리즘 작성
+
+                track_msg = TrackingMsg() #트래킹 전송
+                track_msg.tracking_msg = "stop"
+                self.tracking_msg_pub.publish(track_msg)
+                
                 self.create_timer(5.0, self.send_find_target_car_goal) 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = AMRCtrl()
-    # node.check_topics_and_actions()
-
-    # thread = threading.Thread(target=keyboard_listener, args=(node,), daemon=True)
-    # thread.start()
-
-    rclpy.spin(node)
+    
+    try:
+        node = AMRCtrl()
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.get_logger().info('강제 종료')
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
